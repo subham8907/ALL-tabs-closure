@@ -1,0 +1,110 @@
+{
+  "extName": {
+    "message": "Fechar Todas as Abas",
+    "description": "O nome da extensão"
+  },
+  "extDescription": {
+    "message": "Feche todas as abas ativas em seu navegador com um clique.",
+    "description": "A descrição da extensão"
+  },
+  "popupTitle": {
+    "message": "Fechar Todas as Abas",
+    "description": "O título do pop-up"
+  },
+  "popupDescription": {
+    "message": "Pronto para um novo começo? Clique abaixo para fechar instantaneamente todas as suas abas abertas.",
+    "description": "A descrição no pop-up"
+  },
+  "popupWarning": {
+    "message": "Cuidado! Clicar abaixo fechará imediatamente todas as suas abas ativas abertas.",
+    "description": "Mensagem de aviso no pop-up"
+  },
+  "closeAllTabsButton": {
+    "message": "Fechar Todas as Abas",
+    "description": "Texto para o botão de fechar todas as abas"
+  },
+  "optionsTitle": {
+    "message": "Configurações de Fechar Todas as Abas",
+    "description": "O título da página de opções"
+  },
+  "optionsCaution": {
+    "message": "Atenção: Essas ações afetarão o comportamento da extensão.",
+    "description": "Mensagem de cuidado na página de opções"
+  },
+  "optionNewTab": {
+    "message": "Abrir nova aba após fechar, exceto as fixadas",
+    "description": "Opção para abrir nova aba após fechar"
+  },
+  "optionCloseAll": {
+    "message": "Fechar todas as abas (incluindo o navegador)",
+    "description": "Opção para fechar todas as abas incluindo o navegador"
+  },
+  "optionCloseAllExceptBrowser": {
+    "message": "Fechar todas as abas (incluindo as fixadas) sem fechar o navegador",
+    "description": "Opção para fechar todas as abas exceto o navegador"
+  },
+  "optionCloseExceptCurrentPinned": {
+    "message": "Fechar todas as abas exceto a atual e as fixadas",
+    "description": "Opção para fechar todas as abas exceto a atual e as fixadas"
+  },
+  "optionCloseExceptCurrent": {
+    "message": "Fechar todas as abas exceto a atual",
+    "description": "Opção para fechar todas as abas exceto a atual"
+  },
+  "optionCloseOtherWindows": {
+    "message": "Fechar todas as abas em outras janelas",
+    "description": "Opção para fechar todas as abas em outras janelas"
+  },
+  "optionCloseExceptCurrentPinnedGroup": {
+    "message": "Fechar todas as abas exceto a atual, as fixadas e as de grupo",
+    "description": "Opção para fechar todas as abas exceto a atual, as fixadas e as de grupo"
+  },
+  "optionCloseAllClearHistory": {
+    "message": "Fechar todas as abas e limpar o histórico de pesquisa",
+    "description": "Opção para fechar todas as abas e limpar o histórico de pesquisa"
+  },
+  "currentwin": {
+    "message": "Fechar outras abas na janela atual (manter ativa, fixadas e agrupadas)",
+    "description": "Opção para fechar todas as abas na janela atual"
+  },
+  "saveButton": {
+    "message": "Salvar",
+    "description": "Texto para o botão de salvar"
+  },
+  "saveExitButton": {
+    "message": "Salvar e Sair",
+    "description": "Texto para o botão de salvar e sair"
+  },
+  "quickexecution": {
+    "message": "Executar",
+    "description": "Executar"
+  },
+  "executeButton": {
+    "message": "Executar e Salvar",
+    "description": "Texto para o botão de executar e salvar"
+  },
+  "saveExecuteExitButton": {
+    "message": "Salvar, Executar, Sair",
+    "description": "Texto para o botão de salvar, executar e sair"
+  },
+  "settingsSaved": {
+    "message": "Configurações salvas.",
+    "description": "Mensagem mostrada quando as configurações são salvas"
+  },
+  "executingTabClosure": {
+    "message": "Executando o fechamento de abas...",
+    "description": "Mensagem mostrada ao executar o fechamento de abas"
+  },
+  "tabClosureFailure": {
+    "message": "Falha ao iniciar o fechamento de abas.",
+    "description": "Mensagem mostrada quando o fechamento de abas falha"
+  },
+  "shortcutCloseTabs": {
+    "message": "Fechar abas (Ctrl+X)",
+    "description": "Descrição para o atalho de fechar abas"
+  },
+  "shortcutOpenSettings": {
+    "message": "Abrir configurações (Ctrl+Q)",
+    "description": "Descrição para o atalho de abrir configurações"
+  }
+}
