@@ -72,6 +72,6 @@ If you encounter any issues or have suggestions for improvement, please [open an
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.please find another license in icons folder
 
 
