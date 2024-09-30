@@ -164,4 +164,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.storage.local.set({ actionType: "newtab" }, () => {
+        console.log('Default actionType set to "newtab"');
+    });
+});
+
 console.log('Service worker script loaded');
