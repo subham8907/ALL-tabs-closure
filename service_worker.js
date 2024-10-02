@@ -164,10 +164,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
-chrome.runtime.onInstalled.addListener(() => {
-    chrome.storage.local.set({ actionType: "newtab" }, () => {
-        console.log('Default actionType set to "newtab"');
+////bugs fixed for 2.1 update
+
+async function firstInstalled() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get('firstInstalled', (result) => {
+        if (result.firstInstalled === undefined) {
+          chrome.storage.local.set({ firstInstalled: true }, () => {
+            resolve(true);
+          });
+        } else {
+          resolve(false);
+        }
+      });
     });
+}
+  
+// Listen for installation events
+chrome.runtime.onInstalled.addListener(async () => {
+    const isFirstInstall = await firstInstalled();
+    if (isFirstInstall) {
+        chrome.storage.local.set({ actionType: "newtab" }, () => {
+            console.log('Default actionType set to "newtab"');
+        });
+    }
 });
 
 console.log('Service worker script loaded');
