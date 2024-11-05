@@ -1,50 +1,105 @@
-name: Pack Chrome Extension
-
-# Add permissions block
-permissions:
-  contents: write  # This is needed for creating releases
+name: Chrome Extension Release
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., v1.2.3)'
+        required: true
+      release_notes:
+        description: 'Release notes (use | for line breaks)'
+        required: true
+      additional_comments:
+        description: 'Additional comments (optional)'
+        required: false
   release:
     types: [created]
 
+permissions:
+  contents: write
+
 jobs:
-  pack-extension:
+  create-release:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Create a clean directory without the PEM file
+      - name: Read manifest version
+        id: manifest
+        run: |
+          VERSION=$(jq -r .version manifest.json)
+          echo "manifest_version=$VERSION" >> $GITHUB_OUTPUT
+
+      # Create clean directory and pack source extension
       - name: Prepare clean directory
         run: |
           mkdir clean_ext
           rsync -av --exclude='*.pem' --exclude='.git*' --exclude='.github' . clean_ext/
 
-      # Install Chrome
       - name: Install Chrome
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser
 
-      # Pack the extension
-      - name: Pack Extension
+      - name: Pack Source Extension
         run: |
           chromium-browser --pack-extension="$(pwd)/clean_ext"
-          mv clean_ext.crx "${{ github.event.repository.name }}.crx"
+          mv clean_ext.crx "source_${{ github.event.repository.name }}.crx"
+
+      # Download from Chrome Web Store using your specific extension ID
+      - name: Download from Chrome Web Store
+        run: |
+          EXTENSION_ID="bpiekeniajgabgndghkaagjehjipmcgi"
+          wget "https://clients2.google.com/service/update2/crx?response=redirect&acceptformat=crx2,crx3&prodversion=98&x=id%3D${EXTENSION_ID}%26installsource%3Dondemand%26uc" -O "webstore_${{ github.event.repository.name }}.crx" || echo "Failed to download from Web Store"
+
+      # Create or update release
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            NOTES="${{ github.event.inputs.release_notes }}"
+            COMMENTS="${{ github.event.inputs.additional_comments }}"
+          else
+            VERSION="${{ steps.manifest.outputs.manifest_version }}"
+            NOTES="Automated release from source code"
+            COMMENTS=""
+          fi
           
-      # Upload CRX to release with explicit token
-      - name: Upload to Release
+          # Create release notes
+          echo "### Release Notes" > RELEASE_NOTES.md
+          echo "Version: $VERSION (Manifest: ${{ steps.manifest.outputs.manifest_version }})" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "Chrome Web Store: [All Tabs Closure](https://chromewebstore.google.com/detail/all-tabs-closure/bpiekeniajgabgndghkaagjehjipmcgi)" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "$NOTES" | sed 's/|/\n/g' >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          
+          if [ ! -z "$COMMENTS" ]; then
+            echo "### Additional Comments" >> RELEASE_NOTES.md
+            echo "$COMMENTS" | sed 's/|/\n/g' >> RELEASE_NOTES.md
+            echo "" >> RELEASE_NOTES.md
+          fi
+          
+          echo "### Files Included" >> RELEASE_NOTES.md
+          echo "- \`source_*.crx\`: Built directly from source code" >> RELEASE_NOTES.md
+          echo "- \`webstore_*.crx\`: Downloaded from Chrome Web Store" >> RELEASE_NOTES.md
+
+      - name: Create/Update Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
-          files: ${{ github.event.repository.name }}.crx
+          tag_name: ${{ github.event.inputs.version || steps.manifest.outputs.manifest_version }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            source_${{ github.event.repository.name }}.crx
+            webstore_${{ github.event.repository.name }}.crx
+          draft: false
+          prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Cleanup
       - name: Cleanup
         if: always()
-        run: rm -rf clean_ext
+        run: rm -rf clean_ext RELEASE_NOTES.md
