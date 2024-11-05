@@ -3,9 +3,6 @@ name: Chrome Extension Release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version number (e.g., v1.2.3)'
-        required: true
       release_notes:
         description: 'Release notes (use | for line breaks)'
         required: true
@@ -29,6 +26,7 @@ jobs:
         id: manifest
         run: |
           VERSION=$(jq -r .version manifest.json)
+          echo "Version from manifest: $VERSION"
           echo "manifest_version=$VERSION" >> $GITHUB_OUTPUT
 
       # Create clean directory and pack source extension
@@ -47,7 +45,7 @@ jobs:
           chromium-browser --pack-extension="$(pwd)/clean_ext"
           mv clean_ext.crx "source_${{ github.event.repository.name }}.crx"
 
-      # Download from Chrome Web Store using your specific extension ID
+      # Download from Chrome Web Store
       - name: Download from Chrome Web Store
         run: |
           EXTENSION_ID="bpiekeniajgabgndghkaagjehjipmcgi"
@@ -57,19 +55,18 @@ jobs:
       - name: Generate Release Notes
         id: release_notes
         run: |
+          VERSION="${{ steps.manifest.outputs.manifest_version }}"
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.version }}"
             NOTES="${{ github.event.inputs.release_notes }}"
             COMMENTS="${{ github.event.inputs.additional_comments }}"
           else
-            VERSION="${{ steps.manifest.outputs.manifest_version }}"
             NOTES="Automated release from source code"
             COMMENTS=""
           fi
           
           # Create release notes
           echo "### Release Notes" > RELEASE_NOTES.md
-          echo "Version: $VERSION (Manifest: ${{ steps.manifest.outputs.manifest_version }})" >> RELEASE_NOTES.md
+          echo "Version: v$VERSION" >> RELEASE_NOTES.md
           echo "" >> RELEASE_NOTES.md
           echo "Chrome Web Store: [All Tabs Closure](https://chromewebstore.google.com/detail/all-tabs-closure/bpiekeniajgabgndghkaagjehjipmcgi)" >> RELEASE_NOTES.md
           echo "" >> RELEASE_NOTES.md
@@ -83,14 +80,20 @@ jobs:
           fi
           
           echo "### Files Included" >> RELEASE_NOTES.md
-          echo "- \`source_*.crx\`: Built directly from source code" >> RELEASE_NOTES.md
+          echo "- \`source_*.crx\`: Built directly from source code (v$VERSION)" >> RELEASE_NOTES.md
           echo "- \`webstore_*.crx\`: Downloaded from Chrome Web Store" >> RELEASE_NOTES.md
+
+      - name: Create Tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="${{ steps.manifest.outputs.manifest_version }}"
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
 
       - name: Create/Update Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
-          tag_name: ${{ github.event.inputs.version || steps.manifest.outputs.manifest_version }}
+          tag_name: v${{ steps.manifest.outputs.manifest_version }}
           body_path: RELEASE_NOTES.md
           files: |
             source_${{ github.event.repository.name }}.crx
