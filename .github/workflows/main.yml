@@ -12,31 +12,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Create a clean directory without the PEM file
+      - name: Prepare clean directory
+        run: |
+          mkdir clean_ext
+          rsync -av --exclude='*.pem' --exclude='.git*' --exclude='.github' . clean_ext/
+
       # Install Chrome
       - name: Install Chrome
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser
 
-      # Create a temporary PEM file if not exists
-      - name: Create or use PEM
-        run: |
-          if [ ! -f "./extension.pem" ]; then
-            openssl genpkey -algorithm RSA -out extension.pem -pkeyopt rsa_keygen_bits:2048
-          fi
-
-      # Pack the extension using Chrome
+      # Pack the extension
       - name: Pack Extension
         run: |
-          chromium-browser --pack-extension="$(pwd)" --pack-extension-key="$(pwd)/extension.pem"
-          mv "$(pwd).crx" "${{ github.event.repository.name }}.crx"
-      
-      # Upload both CRX and PEM files to release
+          chromium-browser --pack-extension="$(pwd)/clean_ext"
+          mv clean_ext.crx "${{ github.event.repository.name }}.crx"
+          
+      # Upload CRX to release
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            ${{ github.event.repository.name }}.crx
-            extension.pem
+          files: ${{ github.event.repository.name }}.crx
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Cleanup
+      - name: Cleanup
+        if: always()
+        run: rm -rf clean_ext
