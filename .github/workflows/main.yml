@@ -16,7 +16,7 @@ jobs:
       - name: Prepare extension directory
         run: |
           mkdir -p temp_extension
-          cp -r ./_locales ./icons ./option ./popup ./manifest.json ./background.js temp_extension/
+          cp -r ./_locales ./icons ./option ./popup ./manifest.json ./service_worker.js temp_extension/
         
       - name: Pack Chrome Extension
         uses: emilymclean/pack-chromium-extension@v1
