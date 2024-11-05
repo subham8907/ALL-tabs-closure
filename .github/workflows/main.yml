@@ -11,12 +11,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
+      # Prepare the extension directory
+      - name: Prepare extension directory
+        run: |
+          mkdir -p temp_extension
+          cp -r ./_locales ./icons ./option ./popup ./manifest.json ./background.js temp_extension/
+        
       - name: Pack Chrome Extension
         uses: emilymclean/pack-chromium-extension@v1
         with:
-          input-folder: '.'  # Root directory containing your extension source
-          output-file: '${{ github.event.repository.name }}.crx'  # Will use repo name as the file name
+          input-folder: './temp_extension'
+          output-file: '${{ github.event.repository.name }}.crx'
       
       - name: Upload Extension to Release
         uses: softprops/action-gh-release@v1
@@ -24,3 +30,8 @@ jobs:
           files: ${{ github.event.repository.name }}.crx
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      # Cleanup
+      - name: Cleanup
+        if: always()
+        run: rm -rf temp_extension
