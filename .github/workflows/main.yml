@@ -12,57 +12,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # First, create a tar file to preserve all permissions and structure
-      - name: Prepare extension files
+      # Install Chrome
+      - name: Install Chrome
         run: |
-          tar -czf extension.tar.gz \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='node_modules' \
-            ./_locales \
-            ./icons \
-            ./option \
-            ./popup \
-            ./manifest.json \
-            ./service_worker.js
-          mkdir -p temp_extension
-          mv extension.tar.gz temp_extension/
-          cd temp_extension
-          tar -xzf extension.tar.gz
-          rm extension.tar.gz
-          ls -la  # Debug: List all files
-          
-      - name: Debug directory structure
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+
+      # Create a temporary PEM file if not exists
+      - name: Create or use PEM
         run: |
-          echo "Current directory structure:"
-          tree temp_extension
-          
-      - name: Pack Chrome Extension
-        uses: emilymclean/pack-chromium-extension@v1
-        env:
-          INPUT_INPUT-FOLDER: './temp_extension'
-          INPUT_OUTPUT-FILE: '${{ github.event.repository.name }}.crx'
-        with:
-          input-folder: './temp_extension'
-          output-file: '${{ github.event.repository.name }}.crx'
+          if [ ! -f "./extension.pem" ]; then
+            openssl genpkey -algorithm RSA -out extension.pem -pkeyopt rsa_keygen_bits:2048
+          fi
+
+      # Pack the extension using Chrome
+      - name: Pack Extension
+        run: |
+          chromium-browser --pack-extension="$(pwd)" --pack-extension-key="$(pwd)/extension.pem"
+          mv "$(pwd).crx" "${{ github.event.repository.name }}.crx"
       
-      - name: Check for CRX file
-        run: |
-          echo "Checking for CRX file..."
-          ls -la
-          echo "Checking temp_extension directory..."
-          ls -la temp_extension
-      
-      - name: Upload Extension to Release
+      # Upload both CRX and PEM files to release
+      - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ./${{ github.event.repository.name }}.crx
-            ./temp_extension/${{ github.event.repository.name }}.crx
+            ${{ github.event.repository.name }}.crx
+            extension.pem
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      # Cleanup
-      - name: Cleanup
-        if: always()
-        run: rm -rf temp_extension
