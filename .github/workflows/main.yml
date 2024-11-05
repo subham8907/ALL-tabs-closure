@@ -1,0 +1,41 @@
+name: Download All Tabs Closure Extension
+on:
+  workflow_dispatch:  # Allows manual triggering
+  schedule:
+    - cron: '0 0 * * 0'  # Runs weekly on Sunday at midnight
+
+jobs:
+  download-crx:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Create downloads directory
+        run: mkdir -p downloads
+
+      - name: Download All Tabs Closure crx file
+        uses: cardinalby/webext-buildtools-chrome-webstore-download-crx-action@1.0.4
+        with:
+          # Extension ID extracted from the URL
+          extensionId: 'bpiekeniajgabgndghkaagjehjipmcgi'
+          
+          # Save the crx file in the downloads directory
+          crxFilePath: './downloads/all-tabs-closure.crx'
+          
+          # Using latest supported Chrome version
+          prodVersion: '83.0.4103.116'
+          
+          # Accept both crx2 and crx3 formats
+          acceptFormat: 'crx2|crx3'
+          
+          # Setting up for Windows x64 platform as default
+          platformOs: 'win'
+          platformArch: 'x64'
+          platformNaclArch: 'x86-64'
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: all-tabs-closure-extension
+          path: ./downloads/all-tabs-closure.crx
+          retention-days: 30
