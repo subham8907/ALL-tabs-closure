@@ -12,11 +12,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Prepare the extension directory
-      - name: Prepare extension directory
+      # Create a single file with all contents
+      - name: Create zip file
         run: |
-          mkdir -p temp_extension
-          cp -r ./_locales ./icons ./option ./popup ./manifest.json ./service_worker.js temp_extension/
+          zip -r extension.zip . -x "*.git*"
+          mkdir temp_extension
+          mv extension.zip temp_extension/
+          cd temp_extension
+          unzip extension.zip
+          rm extension.zip
         
       - name: Pack Chrome Extension
         uses: emilymclean/pack-chromium-extension@v1
